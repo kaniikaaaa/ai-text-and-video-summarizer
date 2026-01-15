@@ -88,13 +88,7 @@ ai-text-and-video-summarizer/
 ├── package.json                  # Node.js dependencies
 ├── database.sql                  # Database schema
 ├── start_backend.bat             # Windows: Start Flask server
-├── start_frontend.bat            # Windows: Start React app
-├── SETUP_GUIDE.md               # Detailed setup instructions
-├── GRAMMAR_CORRECTION.md        # Grammar correction documentation
-├── SMART_FORMATTING.md          # Smart formatting documentation
-├── RESUME_FORMATTING.md         # Resume preprocessing documentation
-├── VIDEO_SUMMARIZATION_GUIDE.md # Video summarization documentation
-└── VALIDATION_SECURITY.md       # Security and validation documentation
+└── start_frontend.bat            # Windows: Start React app
 ```
 
 ## 🚀 Quick Start
@@ -241,14 +235,6 @@ npm start
 - **Params**: `video_url`
 - **Returns**: `video_duration`, `total_segments`, `timestamped_segments`
 
-## 📚 Documentation
-
-- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Detailed installation and troubleshooting
-- **[GRAMMAR_CORRECTION.md](GRAMMAR_CORRECTION.md)** - Grammar correction pipeline
-- **[SMART_FORMATTING.md](SMART_FORMATTING.md)** - Document structure detection
-- **[RESUME_FORMATTING.md](RESUME_FORMATTING.md)** - Resume preprocessing
-- **[VIDEO_SUMMARIZATION_GUIDE.md](VIDEO_SUMMARIZATION_GUIDE.md)** - Video processing
-- **[VALIDATION_SECURITY.md](VALIDATION_SECURITY.md)** - Security measures
 
 ## 🧪 Development
 
