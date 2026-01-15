@@ -8,7 +8,8 @@ const TextSummary = () => {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [method, setMethod] = useState('textrank');
-  const [maxSentences, setMaxSentences] = useState(5);
+  const [maxSentences, setMaxSentences] = useState('auto');
+  const [useAutoLength, setUseAutoLength] = useState(true);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -45,7 +46,7 @@ const TextSummary = () => {
       // Create request body for text or additional parameters
       const requestBody = {
         method: method,
-        max_sentences: maxSentences
+        max_sentences: useAutoLength ? 'auto' : parseInt(maxSentences)
       };
       
       if (inputText.trim()) {
@@ -131,15 +132,34 @@ const TextSummary = () => {
             </div>
 
             <div className="option-group">
-              <label>Max Sentences:</label>
-              <input
-                type="number"
-                min="1"
-                max="20"
-                value={maxSentences}
-                onChange={(e) => setMaxSentences(parseInt(e.target.value))}
-              />
+              <label>Summary Length:</label>
+              <select 
+                value={useAutoLength ? 'auto' : 'manual'} 
+                onChange={(e) => {
+                  const isAuto = e.target.value === 'auto';
+                  setUseAutoLength(isAuto);
+                  if (!isAuto && maxSentences === 'auto') {
+                    setMaxSentences(5);
+                  }
+                }}
+              >
+                <option value="auto">🤖 Auto (Smart Detection)</option>
+                <option value="manual">✍️ Manual (Choose Number)</option>
+              </select>
             </div>
+
+            {!useAutoLength && (
+              <div className="option-group">
+                <label>Number of Sentences:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={maxSentences === 'auto' ? 5 : maxSentences}
+                  onChange={(e) => setMaxSentences(parseInt(e.target.value))}
+                />
+              </div>
+            )}
           </div>
 
           <div className="button-group">

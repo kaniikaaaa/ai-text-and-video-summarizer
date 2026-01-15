@@ -60,6 +60,66 @@ def clean_text(text):
     text = re.sub(r'\s+([.,!?;:])', r'\1', text)
     return text.strip()
 
+def preprocess_text_for_sentences(text):
+    """Preprocess text to handle comma-separated clauses as separate sentences"""
+    # Replace commas followed by space with periods for better sentence splitting
+    # This helps when input is like "clause1, clause2, clause3"
+    text = re.sub(r',\s+', '. ', text)
+    # Ensure sentences end with period
+    if not text.endswith('.'):
+        text += '.'
+    # Clean up multiple periods
+    text = re.sub(r'\.+', '.', text)
+    # Fix spacing
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+def calculate_optimal_summary_length(text):
+    """
+    Automatically calculate optimal summary length based on input text characteristics
+    Returns optimal number of sentences for summary
+    """
+    # Get text statistics
+    sentences = sent_tokenize(text)
+    words = text.split()
+    
+    num_sentences = len(sentences)
+    num_words = len(words)
+    avg_sentence_length = num_words / num_sentences if num_sentences > 0 else 0
+    
+    # Strategy 1: Based on total word count
+    if num_words < 100:
+        # Very short text - preserve most of it
+        target_sentences = max(2, int(num_sentences * 0.7))
+    elif num_words < 300:
+        # Short text - 50-60% retention
+        target_sentences = max(2, int(num_sentences * 0.5))
+    elif num_words < 800:
+        # Medium text - 30-40% retention
+        target_sentences = max(3, int(num_sentences * 0.35))
+    elif num_words < 2000:
+        # Long text - 20-30% retention
+        target_sentences = max(4, int(num_sentences * 0.25))
+    else:
+        # Very long text - 15-20% retention
+        target_sentences = max(5, int(num_sentences * 0.18))
+    
+    # Strategy 2: Adjust based on sentence complexity
+    if avg_sentence_length > 25:
+        # Complex sentences - can reduce more
+        target_sentences = max(2, int(target_sentences * 0.8))
+    elif avg_sentence_length < 10:
+        # Simple sentences - need more to convey meaning
+        target_sentences = int(target_sentences * 1.2)
+    
+    # Strategy 3: Ensure reasonable bounds
+    target_sentences = max(2, min(target_sentences, 12))  # Between 2-12 sentences
+    
+    # Don't exceed original sentence count
+    target_sentences = min(target_sentences, num_sentences)
+    
+    return target_sentences
+
 def sentence_similarity(sent1, sent2, stopwords=None):
     """Compute similarity between two sentences"""
     if stopwords is None:
@@ -245,36 +305,59 @@ def are_sentences_similar(sent1, sent2, threshold=0.7):
     similarity = intersection / union if union > 0 else 0
     return similarity > threshold
 
-def textrank_summarize(text, max_sentences=5):
-    """Generate summary using advanced TextRank with redundancy removal"""
+def textrank_summarize(text, max_sentences=None):
+    """Generate summary using advanced TextRank with redundancy removal
+    
+    Args:
+        text: Input text to summarize
+        max_sentences: Maximum sentences in summary. If None, automatically calculated.
+    """
     stop_words = set(stopwords.words("english"))
     
-    # Clean the text first
+    # Preprocess text to handle comma-separated clauses
+    text = preprocess_text_for_sentences(text)
+    
+    # Clean the text
     text = clean_text(text)
+    
+    # Auto-calculate optimal summary length if not provided
+    if max_sentences is None or max_sentences == 0:
+        max_sentences = calculate_optimal_summary_length(text)
+        print(f"Auto-calculated summary length: {max_sentences} sentences")
     
     # Get original sentences
     original_sentences = sent_tokenize(text)
     
-    # Filter sentences
+    # Step 1: Remove exact duplicates first (preserve order of first occurrence)
+    seen_sentences = {}
+    unique_sentences = []
+    for idx, sentence in enumerate(original_sentences):
+        normalized = sentence.strip().lower()
+        if normalized not in seen_sentences:
+            seen_sentences[normalized] = idx
+            unique_sentences.append(sentence.strip())
+    
+    # Step 2: Filter sentences by length and quality
     filtered_sentences = []
-    for sentence in original_sentences:
+    for sentence in unique_sentences:
         words = word_tokenize(sentence)
-        # Keep sentences with at least 5 words and not too long
-        if 5 <= len(words) <= 50:
+        # Keep sentences with at least 3 words (relaxed from 5)
+        if 3 <= len(words) <= 50:
             # Remove sentences that are likely headers or titles (all caps, very short)
             if not (sentence.isupper() and len(words) < 4):
-                filtered_sentences.append(sentence.strip())
+                filtered_sentences.append(sentence)
     
     if len(filtered_sentences) == 0:
         return "Unable to generate summary."
     
+    # If unique sentences are already less than or equal to max, return them all
     if len(filtered_sentences) <= max_sentences:
         return " ".join(filtered_sentences)
     
-    # Calculate importance scores
+    # Step 3: Calculate importance scores
     sentence_scores = calculate_sentence_importance(filtered_sentences, stop_words)
     
-    # Select sentences with diversity (avoid redundancy)
+    # Step 4: Select diverse sentences (avoid very similar ones)
     selected_sentences = []
     selected_indices = []
     
@@ -290,7 +373,8 @@ def textrank_summarize(text, max_sentences=5):
         # Check if this sentence is too similar to already selected ones
         is_redundant = False
         for selected_idx in selected_indices:
-            if are_sentences_similar(sentence, filtered_sentences[selected_idx], threshold=0.6):
+            # Use stricter threshold (0.5 instead of 0.6) for better duplicate detection
+            if are_sentences_similar(sentence, filtered_sentences[selected_idx], threshold=0.5):
                 is_redundant = True
                 break
         
@@ -298,7 +382,7 @@ def textrank_summarize(text, max_sentences=5):
             selected_indices.append(idx)
             selected_sentences.append(sentence)
     
-    # If we don't have enough sentences (too many were redundant), add more
+    # If we don't have enough sentences due to redundancy, add more with lower scores
     if len(selected_indices) < max_sentences:
         for idx, score in ranked_items:
             if len(selected_indices) >= max_sentences:
@@ -318,11 +402,21 @@ def textrank_summarize(text, max_sentences=5):
     
     return summary
 
-def transformer_summarize(text, max_sentences=5):
-    """Generate summary using transformer model with intelligent chunking"""
+def transformer_summarize(text, max_sentences=None):
+    """Generate summary using transformer model with intelligent chunking
+    
+    Args:
+        text: Input text to summarize
+        max_sentences: Target sentences in summary. If None, automatically calculated.
+    """
     try:
         # Clean the text
         text = text.strip()
+        
+        # Auto-calculate optimal summary length if not provided
+        if max_sentences is None or max_sentences == 0:
+            max_sentences = calculate_optimal_summary_length(text)
+            print(f"Auto-calculated summary length (Transformer): {max_sentences} sentences")
         
         # Calculate dynamic lengths based on input
         words = text.split()
@@ -410,19 +504,18 @@ def summarize():
         if not text or not text.strip():
             return jsonify({'error': 'Empty text provided'}), 400
         
-        # Clean the text
-        text = clean_text(text)
-        
         # Get summary parameters from form (if file upload) or json (if text)
         if 'file' in request.files:
             method = request.form.get('method', 'textrank')
-            max_sentences = int(request.form.get('max_sentences', 5))
+            max_sentences_str = request.form.get('max_sentences', 'auto')
+            max_sentences = None if max_sentences_str == 'auto' or max_sentences_str == '' else int(max_sentences_str)
         elif request.json:
             method = request.json.get('method', 'textrank')
-            max_sentences = int(request.json.get('max_sentences', 5))
+            max_sentences_value = request.json.get('max_sentences', 'auto')
+            max_sentences = None if max_sentences_value == 'auto' or max_sentences_value == '' or max_sentences_value is None else int(max_sentences_value)
         else:
             method = 'textrank'
-            max_sentences = 5
+            max_sentences = None
         
         # Generate summary
         if method == 'transformer' and USE_TRANSFORMER:
