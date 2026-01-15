@@ -21,6 +21,7 @@ from backend_validation import (
     validate_request_body,
     check_rate_limit
 )
+from grammar_corrector import polish_summary
 
 # Fix SSL certificate issues
 try:
@@ -571,6 +572,10 @@ def summarize():
                 summary = textrank_summarize(text, max_sentences)
         else:
             summary = textrank_summarize(text, max_sentences)
+        
+        # Apply grammar correction and polishing
+        summary = polish_summary(summary)
+        app.logger.info("Applied grammar correction and polishing to summary")
         
         # Calculate stats
         original_words = len(text.split())

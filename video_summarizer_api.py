@@ -13,6 +13,7 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from grammar_corrector import polish_summary
 
 # Download required NLTK data
 try:
@@ -219,10 +220,12 @@ def summarize_video_with_timestamps(video_url):
     # Create segments
     segments = create_segments_with_topics(transcript, topic_changes)
     
-    # Summarize each segment
+    # Summarize each segment with grammar correction
     summarized_segments = []
     for segment in segments:
         summary = summarize_segment(segment['text'], max_sentences=2)
+        # Apply grammar correction to each segment summary
+        summary = polish_summary(summary)
         summarized_segments.append({
             'timestamp': segment['timestamp'],
             'summary': summary
@@ -230,6 +233,10 @@ def summarize_video_with_timestamps(video_url):
     
     # Create full summary
     full_text = ' '.join([seg['text'] for seg in segments])
+    
+    # Create full summary from all segments and apply grammar correction
+    full_summary = ' '.join([seg['summary'] for seg in summarized_segments])
+    full_summary = polish_summary(full_summary)
     
     # Overall statistics
     total_duration = transcript[-1]['start'] + transcript[-1].get('duration', 0)
@@ -239,7 +246,7 @@ def summarize_video_with_timestamps(video_url):
         'total_duration': format_timestamp(total_duration),
         'total_segments': len(summarized_segments),
         'segments': summarized_segments,
-        'full_summary': ' '.join([seg['summary'] for seg in summarized_segments])
+        'full_summary': full_summary
     }
     
     return result, None
