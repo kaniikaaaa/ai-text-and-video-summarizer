@@ -12,6 +12,15 @@ from transformers import pipeline
 import ssl
 import re
 from video_summarizer_api import summarize_video_with_timestamps
+from backend_validation import (
+    validate_text,
+    validate_file,
+    validate_youtube_url,
+    validate_summarization_method,
+    validate_max_sentences,
+    validate_request_body,
+    check_rate_limit
+)
 
 # Fix SSL certificate issues
 try:
@@ -479,11 +488,24 @@ def transformer_summarize(text, max_sentences=None):
 def summarize():
     """API endpoint for text summarization"""
     try:
+        # Rate limiting
+        client_ip = request.remote_addr
+        is_allowed, rate_limit_msg = check_rate_limit(client_ip, limit=50, window=60)
+        if not is_allowed:
+            app.logger.warning(f"Rate limit exceeded for {client_ip}")
+            return jsonify({'error': rate_limit_msg}), 429
+        
         text = ""
         
         # Check if file is uploaded
         if 'file' in request.files:
             file = request.files['file']
+            
+            # Validate file
+            is_valid_file, file_errors = validate_file(file, file.filename)
+            if not is_valid_file:
+                app.logger.error(f"File validation failed: {file_errors}")
+                return jsonify({'error': '; '.join(file_errors)}), 400
             
             if file.filename.endswith('.pdf'):
                 # Extract text from PDF
@@ -502,21 +524,36 @@ def summarize():
         else:
             return jsonify({'error': 'No text or file provided'}), 400
         
-        if not text or not text.strip():
-            return jsonify({'error': 'Empty text provided'}), 400
+        # Validate and sanitize text
+        is_valid_text, text_errors, sanitized_text = validate_text(text)
+        if not is_valid_text:
+            app.logger.error(f"Text validation failed: {text_errors}")
+            return jsonify({'error': '; '.join(text_errors)}), 400
+        
+        text = sanitized_text
         
         # Get summary parameters from form (if file upload) or json (if text)
         if 'file' in request.files:
             method = request.form.get('method', 'textrank')
             max_sentences_str = request.form.get('max_sentences', 'auto')
-            max_sentences = None if max_sentences_str == 'auto' or max_sentences_str == '' else int(max_sentences_str)
         elif request.json:
             method = request.json.get('method', 'textrank')
-            max_sentences_value = request.json.get('max_sentences', 'auto')
-            max_sentences = None if max_sentences_value == 'auto' or max_sentences_value == '' or max_sentences_value is None else int(max_sentences_value)
+            max_sentences_str = request.json.get('max_sentences', 'auto')
         else:
             method = 'textrank'
-            max_sentences = None
+            max_sentences_str = 'auto'
+        
+        # Validate method
+        is_valid_method, method_errors = validate_summarization_method(method)
+        if not is_valid_method:
+            app.logger.error(f"Method validation failed: {method_errors}")
+            return jsonify({'error': '; '.join(method_errors)}), 400
+        
+        # Validate max_sentences
+        is_valid_sentences, sentences_errors, max_sentences = validate_max_sentences(max_sentences_str)
+        if not is_valid_sentences:
+            app.logger.error(f"Max sentences validation failed: {sentences_errors}")
+            return jsonify({'error': '; '.join(sentences_errors)}), 400
         
         # Generate summary
         if method == 'transformer' and USE_TRANSFORMER:
@@ -547,26 +584,44 @@ def summarize():
 def summarize_video():
     """API endpoint for video summarization with timestamps"""
     try:
+        # Rate limiting
+        client_ip = request.remote_addr
+        is_allowed, rate_limit_msg = check_rate_limit(client_ip, limit=20, window=60)
+        if not is_allowed:
+            app.logger.warning(f"Rate limit exceeded for {client_ip}")
+            return jsonify({'error': rate_limit_msg}), 429
+        
         data = request.json
         
-        if not data or 'video_url' not in data:
+        # Validate request body
+        is_valid_body, body_errors = validate_request_body(data)
+        if not is_valid_body:
+            app.logger.error(f"Request body validation failed: {body_errors}")
+            return jsonify({'error': '; '.join(body_errors)}), 400
+        
+        if 'video_url' not in data:
+            app.logger.error("No video URL provided in request")
             return jsonify({'error': 'No video URL provided'}), 400
         
-        video_url = data['video_url'].strip()
+        video_url = data['video_url']
         
-        if not video_url:
-            return jsonify({'error': 'Empty video URL'}), 400
+        # Validate and sanitize YouTube URL
+        is_valid_url, url_errors, sanitized_url, video_id = validate_youtube_url(video_url)
+        if not is_valid_url:
+            app.logger.error(f"URL validation failed: {url_errors}")
+            return jsonify({'error': '; '.join(url_errors)}), 400
         
-        # Validate YouTube URL
-        if 'youtube.com' not in video_url and 'youtu.be' not in video_url:
-            return jsonify({'error': 'Please provide a valid YouTube URL'}), 400
+        app.logger.info(f"Processing video URL: {sanitized_url} (ID: {video_id})")
         
-        # Summarize video with timestamps
-        result, error = summarize_video_with_timestamps(video_url)
+        # Summarize video with timestamps (use sanitized URL)
+        app.logger.info("Starting video summarization...")
+        result, error = summarize_video_with_timestamps(sanitized_url)
         
         if error:
+            app.logger.error(f"Summarization error: {error}")
             return jsonify({'error': error}), 400
         
+        app.logger.info(f"Successfully summarized video with {result['total_segments']} segments")
         return jsonify({
             'success': True,
             'video_url': result['video_url'],
@@ -577,7 +632,8 @@ def summarize_video():
         })
     
     except Exception as e:
-        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
+        app.logger.error(f"Unexpected error in summarize_video: {str(e)}", exc_info=True)
+        return jsonify({'error': f'An unexpected error occurred. Please try again or use a different video.'}), 500
 
 @app.route('/api/health', methods=['GET'])
 def health():

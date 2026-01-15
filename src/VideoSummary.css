@@ -250,6 +250,38 @@
   font-weight: 400;
 }
 
+/* === Input Validation Styles === */
+
+/* Input validation error state */
+.input-url.error {
+  border-color: #d32f2f !important;
+  background-color: #ffebee;
+}
+
+/* Validation Error Message */
+.validation-error {
+  background-color: #ffebee;
+  border-left: 4px solid #d32f2f;
+  color: #c62828;
+  padding: 12px 15px;
+  margin: 15px 0;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .video-summary-box {

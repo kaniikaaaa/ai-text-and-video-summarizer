@@ -1,36 +1,43 @@
 import React, { useState } from 'react';
 import './VideoSummary.css';
+import {
+  validateYouTubeURL,
+  displayErrors
+} from './utils/inputValidation';
 
 function VideoSummary() {
   const [videoUrl, setVideoUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
 
   const handleSummarizeVideo = async () => {
-    if (!videoUrl.trim()) {
-      alert('Please enter a video URL to summarize.');
-      return;
-    }
-
+    // Clear previous errors
+    setError('');
+    setValidationError('');
+    
     // Validate YouTube URL
-    if (!videoUrl.includes('youtube.com') && !videoUrl.includes('youtu.be')) {
-      alert('Please enter a valid YouTube URL.');
+    const validation = validateYouTubeURL(videoUrl);
+    
+    if (!validation.isValid) {
+      displayErrors(validation.errors);
+      setValidationError(validation.errors.join(', '));
       return;
     }
 
     setLoading(true);
-    setError('');
     setResult(null);
 
     try {
+      // Use sanitized URL from validation
       const response = await fetch('http://localhost:5000/api/summarize/video', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          video_url: videoUrl
+          video_url: validation.sanitized
         })
       });
 
@@ -53,6 +60,18 @@ function VideoSummary() {
     setVideoUrl('');
     setResult(null);
     setError('');
+    setValidationError('');
+  };
+  
+  // Handle URL input change with basic validation
+  const handleUrlChange = (e) => {
+    const url = e.target.value;
+    setVideoUrl(url);
+    
+    // Clear validation error when user starts typing
+    if (validationError) {
+      setValidationError('');
+    }
   };
 
   const handleTimestampClick = (timestamp) => {
@@ -101,17 +120,23 @@ function VideoSummary() {
           <input
             id="video-url"
             type="text"
-            className="input-url"
-            placeholder="https://youtube.com/watch?v=..."
+            className={`input-url ${validationError ? 'error' : ''}`}
+            placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
             value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
+            onChange={handleUrlChange}
           />
           
+          {validationError && (
+            <div className="validation-error">
+              ⚠️ {validationError}
+            </div>
+          )}
+
           <div className="button-group">
             <button 
               className="summarize-video-button" 
               onClick={handleSummarizeVideo}
-              disabled={loading}
+              disabled={loading || !videoUrl.trim()}
             >
               {loading ? '⏳ Processing...' : '🎬 Summarize Video'}
             </button>

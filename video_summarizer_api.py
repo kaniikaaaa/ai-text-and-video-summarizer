@@ -49,19 +49,43 @@ def get_youtube_transcript(video_url):
         video_id = extract_video_id(video_url)
         
         if not video_id:
-            return None, "Invalid YouTube URL"
+            return None, "Invalid YouTube URL. Please check the URL format."
         
-        # Get transcript
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        print(f"Extracting transcript for video ID: {video_id}")
         
+        # Get transcript using new API (v1.2.3+)
+        api = YouTubeTranscriptApi()
+        fetched_transcript = api.fetch(video_id)
+        
+        # Convert FetchedTranscript to list of dicts for compatibility
+        transcript_list = []
+        for snippet in fetched_transcript.snippets:
+            transcript_list.append({
+                'text': snippet.text,
+                'start': snippet.start,
+                'duration': snippet.duration
+            })
+        
+        print(f"Successfully extracted {len(transcript_list)} transcript segments")
         return transcript_list, None
     
     except TranscriptsDisabled:
-        return None, "Transcripts are disabled for this video"
+        return None, "Subtitles/captions are disabled for this video. Please try another video with captions enabled."
     except NoTranscriptFound:
-        return None, "No transcript found for this video"
+        return None, "No subtitles/captions found for this video. Please ensure the video has captions available."
     except Exception as e:
-        return None, f"Error extracting transcript: {str(e)}"
+        error_msg = str(e)
+        print(f"Error extracting transcript: {error_msg}")
+        
+        # Provide more specific error messages
+        if "no element found" in error_msg.lower():
+            return None, "Unable to parse video data. The video might be private, age-restricted, or unavailable. Please try a different video."
+        elif "video unavailable" in error_msg.lower():
+            return None, "Video is unavailable. Please check if the video exists and is public."
+        elif "disabled" in error_msg.lower():
+            return None, "Captions are disabled for this video."
+        else:
+            return None, f"Error: {error_msg}. Please try a different video with available captions."
 
 
 def detect_topic_changes(transcript_segments, window_size=5, threshold=0.3):
