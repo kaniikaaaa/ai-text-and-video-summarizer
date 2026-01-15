@@ -22,6 +22,7 @@ from backend_validation import (
     check_rate_limit
 )
 from grammar_corrector import polish_summary
+from smart_formatter import format_smart_summary
 
 # Fix SSL certificate issues
 try:
@@ -576,6 +577,10 @@ def summarize():
         # Apply grammar correction and polishing
         summary = polish_summary(summary)
         app.logger.info("Applied grammar correction and polishing to summary")
+        
+        # Apply smart formatting based on document structure
+        summary = format_smart_summary(text, summary)
+        app.logger.info("Applied smart formatting to preserve document structure")
         
         # Calculate stats
         original_words = len(text.split())
