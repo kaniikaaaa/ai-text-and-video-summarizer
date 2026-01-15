@@ -1,212 +1,310 @@
 # Concisely - AI Text and Video Summarizer
 
-An intelligent web application that leverages Natural Language Processing and Deep Learning to generate concise summaries from text documents and video content.
+An intelligent web application that leverages Natural Language Processing and Deep Learning to generate concise, well-formatted summaries from text documents (including PDFs) and YouTube videos.
 
 ## Overview
 
-Concisely is designed to help users quickly extract key information from lengthy content. The application provides two core functionalities: text summarization using extractive summarization techniques and video summarization capabilities.
+Concisely is designed to help users quickly extract key information from lengthy content with intelligent formatting, grammar correction, and structure preservation. The application provides comprehensive text and video summarization with automatic length detection and professional output formatting.
 
-## Features
+## ✨ Features
 
-- **Text Summarization**: Extract key sentences from long articles, documents, or any text input
-- **Video Summarization**: Process video content to generate text-based summaries
-- **User Authentication**: Secure signup and login system
-- **Responsive Design**: Modern, user-friendly interface with light/dark theme support
-- **Content Management**: Track and manage your summarization history
+### Text Summarization
+- **PDF & Text Upload**: Support for PDF files, TXT files, and direct text input
+- **Dual Summarization Methods**: TextRank (extractive) and Transformer-based (BART) summarization
+- **Auto-Length Detection**: Automatically determines optimal summary length based on content
+- **Smart Formatting**: Preserves document structure (headings, bullets, sections)
+- **Resume Intelligence**: Special handling for resumes with clean contact information extraction
+- **Grammar Correction**: 11-step pipeline for polished, professional output
+- **Input Validation**: Frontend and backend validation with XSS prevention
 
-## Technology Stack
+### Video Summarization
+- **YouTube Integration**: Extract transcripts from YouTube videos
+- **Topic Detection**: Automatically detects topic changes using TF-IDF and cosine similarity
+- **Timestamped Segments**: Provides timestamps for each topic section
+- **Grammar Polish**: Same professional grammar correction as text summaries
+
+### Security & Validation
+- **3-Layer Security**: Frontend validation, backend validation, and sanitization
+- **Rate Limiting**: Protection against DoS attacks
+- **XSS Prevention**: Input sanitization across all endpoints
+- **File Validation**: Type and size checks for uploaded files
+
+### User Features
+- **Authentication**: Secure signup and login with persistent sessions
+- **Remember Me**: Credentials stored with SHA-256 hashing
+- **Protected Routes**: Access control for authenticated users
+- **Responsive Design**: Modern UI with smooth scrolling
+- **Theme Support**: Light/dark theme toggle
+
+## 🛠 Technology Stack
 
 ### Frontend
-- React.js
-- React Router for navigation
-- CSS3 for styling
+- **React.js** - UI framework
+- **React Router** - Navigation and protected routes
+- **CSS3** - Modern styling with flexbox
+- **localStorage** - Client-side credential storage
 
 ### Backend
-- Python
-- NLTK (Natural Language Toolkit)
-- NumPy for numerical computations
-
-### Database
-- MySQL
+- **Flask** - Python web framework with CORS support
+- **NLTK** - Natural language tokenization and preprocessing
+- **Transformers (Hugging Face)** - BART model for abstractive summarization
+- **scikit-learn** - TF-IDF vectorization and similarity calculations
+- **youtube-transcript-api** - YouTube transcript extraction
+- **PyPDF2** - PDF text extraction
+- **defusedxml** - Secure XML parsing
 
 ### AI/ML Components
-- Extractive Text Summarization using cosine similarity and sentence ranking
-- NLTK for tokenization and stopword removal
-- Feature extraction for text analysis
+- **TextRank Algorithm**: Extractive summarization using eigenvector centrality
+- **BART Transformer**: Abstractive summarization with facebook/bart-large-cnn
+- **TF-IDF Vectorization**: Topic change detection for video segmentation
+- **Cosine Similarity**: Sentence similarity and topic clustering
+- **Grammar Correction**: 11-step regex-based post-processing pipeline
+- **Smart Formatting**: Document structure detection and preservation
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-concisely/
-├── App.js                  # Main application component with routing
-├── App.css                 # Global application styles
-├── index.js                # Application entry point
-├── index.css               # Global styles
-├── components/
-│   ├── Landing.js          # Landing page
-│   ├── Signup.js           # User registration
-│   ├── Login.js            # User authentication
-│   ├── Home.js             # Main dashboard
-│   ├── TextSummary.js      # Text summarization interface
-│   ├── VideoSummary.js     # Video summarization interface
-│   └── ThemeToggle.js      # Theme switcher
-├── text-summarizer.py      # Core text summarization algorithm
-├── feature+summary.py      # Enhanced summarization with feature extraction
-├── feature_text.py         # Text feature extraction utilities
-└── database.sql            # Database schema
+ai-text-and-video-summarizer/
+├── src/                           # React frontend
+│   ├── App.js                    # Main app with routing
+│   ├── AuthContext.js            # Authentication context
+│   ├── ProtectedRoute.js         # Route protection
+│   ├── Login.js                  # Login page
+│   ├── Signup.js                 # Registration page
+│   ├── Home.js                   # Dashboard
+│   ├── Landing.js                # Landing page
+│   ├── TextSummary.js            # Text summarization UI
+│   ├── VideoSummary.js           # Video summarization UI
+│   ├── userStorage.js            # User credential management
+│   └── utils/
+│       └── inputValidation.js    # Frontend validation
+├── backend_api.py                # Main Flask API server
+├── video_summarizer_api.py       # YouTube video processing
+├── grammar_corrector.py          # Grammar correction pipeline
+├── smart_formatter.py            # Intelligent document formatting
+├── resume_preprocessor.py        # Resume-specific preprocessing
+├── backend_validation.py         # Backend input validation
+├── requirements.txt              # Python dependencies
+├── package.json                  # Node.js dependencies
+├── database.sql                  # Database schema
+├── start_backend.bat             # Windows: Start Flask server
+├── start_frontend.bat            # Windows: Start React app
+├── SETUP_GUIDE.md               # Detailed setup instructions
+├── GRAMMAR_CORRECTION.md        # Grammar correction documentation
+├── SMART_FORMATTING.md          # Smart formatting documentation
+├── RESUME_FORMATTING.md         # Resume preprocessing documentation
+├── VIDEO_SUMMARIZATION_GUIDE.md # Video summarization documentation
+└── VALIDATION_SECURITY.md       # Security and validation documentation
 ```
 
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
+- **Node.js** v14 or higher
+- **Python** 3.8+
+- **npm** or yarn package manager
 
-- Node.js (v14 or higher)
-- Python 3.8+
-- MySQL Server
-- npm or yarn package manager
+### Installation
 
-### Frontend Setup
-
-1. Clone the repository:
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/kaniikaaaa/ai-text-and-video-summarizer.git
 cd ai-text-and-video-summarizer
 ```
 
-2. Install dependencies:
+2. **Install frontend dependencies:**
 ```bash
 npm install
 ```
 
-3. Start the development server:
-```bash
-npm start
-```
-
-The application will open at `http://localhost:3000`
-
-### Backend Setup
-
-1. Install Python dependencies:
+3. **Install backend dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Download required NLTK data:
+4. **Download NLTK data:**
 ```python
-python -c "import nltk; nltk.download('stopwords'); nltk.download('punkt')"
+python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords')"
 ```
 
-### Database Setup
+### Running the Application
 
-1. Create the database:
+#### Option 1: Using Batch Files (Windows)
 ```bash
-mysql -u root -p < database.sql
+# Terminal 1: Start backend
+start_backend.bat
+
+# Terminal 2: Start frontend
+start_frontend.bat
 ```
 
-2. Configure database connection in your backend files
+#### Option 2: Manual Start
+```bash
+# Terminal 1: Start Flask backend
+python backend_api.py
 
-## How It Works
+# Terminal 2: Start React frontend
+npm start
+```
 
-### Text Summarization Algorithm
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:5000
 
-The text summarization feature uses an extractive approach:
+## 📖 How It Works
 
-1. **Tokenization**: Text is split into sentences and words
-2. **Preprocessing**: Stopwords are removed and text is normalized
-3. **Similarity Matrix**: Cosine similarity is calculated between sentences
-4. **Ranking**: Sentences are ranked based on similarity scores
-5. **Extraction**: Top-ranked sentences are selected until word limit is reached
+### Text Summarization Pipeline
 
-### Feature Extraction
+1. **Input Validation**: Frontend and backend validation with sanitization
+2. **Resume Detection**: Automatically detects if input is a resume
+3. **Preprocessing**: Cleans and structures text (especially contact info for resumes)
+4. **Summarization**: TextRank or Transformer generates summary with auto-length
+5. **Grammar Correction**: 11-step pipeline fixes capitalization, punctuation, grammar
+6. **Smart Formatting**: Applies document structure (headings, bullets, sections)
+7. **Output**: Clean, professional, well-structured summary
 
-The system extracts the following features from input text:
-- Total word count
-- Total sentence count
-- Unique word count
-- Most common words
-- Average sentence length
+### Video Summarization Pipeline
 
-## Usage
+1. **URL Validation**: Checks for valid YouTube URL format
+2. **Transcript Extraction**: Downloads video transcript with timing
+3. **Topic Detection**: Uses TF-IDF to identify topic changes
+4. **Segmentation**: Groups transcript into coherent topic sections
+5. **Summarization**: TextRank on each segment
+6. **Grammar Polish**: Professional grammar correction
+7. **Output**: Timestamped topic summaries with video duration
+
+### Grammar Correction (11 Steps)
+
+1. Contact info formatting (resume-specific)
+2. Contraction expansion
+3. Punctuation fixes
+4. Sentence structure improvement
+5. Capitalization
+6. Redundant phrase removal
+7. Common grammar mistakes
+8. Article usage improvement
+9. Final punctuation polish
+10. Multiple punctuation removal
+11. Consistent spacing
+
+### Smart Formatting
+
+- **Document Type Detection**: Resume, report, article, or general
+- **Structure Recognition**: Headings, bullets, sections, paragraphs
+- **Contact Extraction**: Email, phone, GitHub, LinkedIn
+- **Hierarchy Preservation**: Maintains original document organization
+- **Professional Output**: Clean sections with proper spacing
+
+## 🎯 Usage
 
 ### Text Summarization
 
-1. Navigate to the Text Summary page
-2. Paste or type your text in the input area
-3. Specify the desired word limit for the summary
-4. Click "Summarize Text" to generate the summary
+1. Navigate to **Text Summary** page
+2. Choose input method:
+   - Upload PDF file
+   - Upload TXT file
+   - Paste/type text directly
+3. Select summarization method:
+   - **TextRank** (fast, extractive)
+   - **Transformer** (advanced, abstractive)
+   - **Auto (Smart Detection)** - automatically chooses optimal length
+4. Click **Generate Summary**
+5. View formatted summary with statistics
 
 ### Video Summarization
 
-1. Navigate to the Video Summary page
-2. Upload your video file
-3. Wait for processing
-4. View the generated text summary
+1. Navigate to **Video Summary** page
+2. Paste YouTube URL
+3. Click **Summarize Video**
+4. View:
+   - Video duration
+   - Number of segments
+   - Timestamped topic summaries
 
-## Database Schema
+## 🔐 Security Features
 
-The application uses four main tables:
+- **Input Validation**: Text length, file type/size, URL format
+- **XSS Prevention**: HTML entity encoding and dangerous pattern removal
+- **Rate Limiting**: 100 requests per minute per IP
+- **File Security**: Type whitelist (PDF, TXT) and 10MB size limit
+- **Safe Parsing**: defusedxml for XML, secure PDF extraction
+- **SHA-256 Hashing**: Client-side password hashing for storage
 
-- **users**: Stores user account information
-- **files**: Tracks uploaded files and their processing status
-- **summaries**: Stores generated summaries
-- **login**: Logs user activity and actions
+## 📊 API Endpoints
 
-## API Endpoints
+### POST `/api/summarize`
+- **Purpose**: Text/PDF summarization
+- **Params**: `text`, `file`, `method`, `max_sentences`
+- **Returns**: `summary`, `original_word_count`, `summary_word_count`, `reduction_percentage`
 
-Documentation for backend API endpoints will be added as the backend implementation is completed.
+### POST `/api/summarize/video`
+- **Purpose**: YouTube video summarization
+- **Params**: `video_url`
+- **Returns**: `video_duration`, `total_segments`, `timestamped_segments`
 
-## Development
+## 📚 Documentation
+
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Detailed installation and troubleshooting
+- **[GRAMMAR_CORRECTION.md](GRAMMAR_CORRECTION.md)** - Grammar correction pipeline
+- **[SMART_FORMATTING.md](SMART_FORMATTING.md)** - Document structure detection
+- **[RESUME_FORMATTING.md](RESUME_FORMATTING.md)** - Resume preprocessing
+- **[VIDEO_SUMMARIZATION_GUIDE.md](VIDEO_SUMMARIZATION_GUIDE.md)** - Video processing
+- **[VALIDATION_SECURITY.md](VALIDATION_SECURITY.md)** - Security measures
+
+## 🧪 Development
 
 ### Available Scripts
 
-- `npm start`: Run the development server
-- `npm build`: Build the production application
-- `npm test`: Run test suite
+- `npm start` - Run development server
+- `npm build` - Build production application
+- `npm test` - Run test suite
+- `python backend_api.py` - Start Flask backend with debug mode
 
-### Running Python Scripts
+### Testing Backend Independently
 
-To test the summarization algorithm independently:
+```python
+# Test text summarization
+curl -X POST http://localhost:5000/api/summarize \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Your text here...", "method": "textrank", "max_sentences": "auto"}'
 
-```bash
-python text-summarizer.py
+# Test video summarization
+curl -X POST http://localhost:5000/api/summarize/video \
+  -H "Content-Type: application/json" \
+  -d '{"video_url": "https://www.youtube.com/watch?v=VIDEO_ID"}'
 ```
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome. Please follow these steps:
+Contributions are welcome! Please follow these steps:
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to your branch
-5. Create a Pull Request
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to your branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Future Enhancements
-
-- Integration with transformer-based models (BART, T5, GPT)
-- Real-time video processing
-- Multi-language support
-- API for third-party integrations
-- Export summaries in multiple formats
-- Advanced video analysis with scene detection
-- Chatbot interface for guided summarization
-
-## Screenshots
+## 🎨 Screenshots
 
 ![Landing Page](https://github.com/user-attachments/assets/dea8c750-bc26-4eb5-9027-c12d68ae0649)
 ![Application Interface](https://github.com/user-attachments/assets/1458ba31-329b-47cc-bf47-0890f382bea8)
 
-## License
+## 📝 License
 
 This project is open source and available for educational purposes.
 
-## Contact
+## 🙏 Acknowledgments
 
-For questions or feedback, please open an issue on the GitHub repository.
+- **NLTK** - Natural language processing toolkit
+- **Hugging Face Transformers** - BART summarization model
+- **React** - Frontend framework
+- **Flask** - Backend framework
+- **scikit-learn** - Machine learning utilities
+- **youtube-transcript-api** - YouTube transcript extraction
 
-## Acknowledgments
+## 📧 Contact
 
-- NLTK library for natural language processing tools
-- React community for frontend framework
-- Contributors and testers who helped improve this project
+For questions, feedback, or issues, please open an issue on the [GitHub repository](https://github.com/kaniikaaaa/ai-text-and-video-summarizer).
+
+---
+
+**Built with ❤️ using AI, NLP, and modern web technologies**
