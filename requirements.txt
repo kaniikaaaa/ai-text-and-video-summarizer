@@ -23,3 +23,6 @@ urllib3==2.1.0
 
 # Additional utilities
 python-dotenv==1.0.0
+
+# Video processing
+youtube-transcript-api==0.6.1

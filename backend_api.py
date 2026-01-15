@@ -11,6 +11,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import pipeline
 import ssl
 import re
+from video_summarizer_api import summarize_video_with_timestamps
 
 # Fix SSL certificate issues
 try:
@@ -541,6 +542,42 @@ def summarize():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/summarize/video', methods=['POST'])
+def summarize_video():
+    """API endpoint for video summarization with timestamps"""
+    try:
+        data = request.json
+        
+        if not data or 'video_url' not in data:
+            return jsonify({'error': 'No video URL provided'}), 400
+        
+        video_url = data['video_url'].strip()
+        
+        if not video_url:
+            return jsonify({'error': 'Empty video URL'}), 400
+        
+        # Validate YouTube URL
+        if 'youtube.com' not in video_url and 'youtu.be' not in video_url:
+            return jsonify({'error': 'Please provide a valid YouTube URL'}), 400
+        
+        # Summarize video with timestamps
+        result, error = summarize_video_with_timestamps(video_url)
+        
+        if error:
+            return jsonify({'error': error}), 400
+        
+        return jsonify({
+            'success': True,
+            'video_url': result['video_url'],
+            'total_duration': result['total_duration'],
+            'total_segments': result['total_segments'],
+            'segments': result['segments'],
+            'full_summary': result['full_summary']
+        })
+    
+    except Exception as e:
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
 
 @app.route('/api/health', methods=['GET'])
 def health():
