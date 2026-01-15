@@ -137,6 +137,35 @@ def improve_article_usage(text):
     return ' '.join(improved_sentences)
 
 
+def fix_contact_info_formatting(text):
+    """Fix messy contact information formatting"""
+    # Fix email formatting
+    text = re.sub(r'envelope\s*([a-z0-9])', r'Email: \1', text, flags=re.IGNORECASE)
+    text = re.sub(r'([a-z0-9])gmail\s*\.\s*com', r'\1@gmail.com', text, flags=re.IGNORECASE)
+    text = re.sub(r'([a-z0-9])@([a-z]+)\s*\.\s*([a-z]+)', r'\1@\2.\3', text, flags=re.IGNORECASE)
+    
+    # Fix phone formatting
+    text = re.sub(r'phone\s*\(', r'Phone: (', text, flags=re.IGNORECASE)
+    
+    # Fix GitHub formatting
+    text = re.sub(r'github\s*([a-z0-9])', r'GitHub: \1', text, flags=re.IGNORECASE)
+    
+    # Fix LinkedIn formatting
+    text = re.sub(r'linkedin\s*([a-z0-9])', r'LinkedIn: \1', text, flags=re.IGNORECASE)
+    
+    # Add commas between contact items
+    # Pattern: .com followed by word
+    text = re.sub(r'(\.com|\.in|\.org)\s+([A-Z][a-z]+:)', r'\1, \2', text)
+    
+    # Pattern: ) followed by word
+    text = re.sub(r'(\))\s+([A-Z][a-z]+:)', r'\1, \2', text)
+    
+    # Pattern: digits followed by word
+    text = re.sub(r'(\d{3,})\s+([A-Z][a-z]+:)', r'\1, \2', text)
+    
+    return text
+
+
 def fix_common_grammar_mistakes(text):
     """Fix common grammar mistakes"""
     # Subject-verb agreement patterns (basic)
@@ -162,34 +191,37 @@ def clean_summary_text(text):
     if not text or not text.strip():
         return text
     
-    # Step 1: Expand contractions for clarity
+    # Step 1: Fix contact info formatting (for resumes)
+    text = fix_contact_info_formatting(text)
+    
+    # Step 2: Expand contractions for clarity
     text = expand_contractions(text)
     
-    # Step 2: Fix punctuation
+    # Step 3: Fix punctuation
     text = fix_punctuation(text)
     
-    # Step 3: Fix sentence structure
+    # Step 4: Fix sentence structure
     text = fix_sentence_structure(text)
     
-    # Step 4: Fix capitalization
+    # Step 5: Fix capitalization
     text = fix_capitalization(text)
     
-    # Step 5: Remove redundant phrases
+    # Step 6: Remove redundant phrases
     text = remove_redundant_phrases(text)
     
-    # Step 6: Fix common grammar mistakes
+    # Step 7: Fix common grammar mistakes
     text = fix_common_grammar_mistakes(text)
     
-    # Step 7: Improve article usage (basic)
+    # Step 8: Improve article usage (basic)
     text = improve_article_usage(text)
     
-    # Step 8: Final cleanup
+    # Step 9: Final cleanup
     text = fix_punctuation(text)  # Run again for final polish
     
-    # Step 9: Remove multiple consecutive punctuation marks
+    # Step 10: Remove multiple consecutive punctuation marks
     text = re.sub(r'([.!?]){2,}', r'\1', text)
     
-    # Step 10: Ensure consistent spacing
+    # Step 11: Ensure consistent spacing
     text = re.sub(r'\s+', ' ', text).strip()
     
     return text

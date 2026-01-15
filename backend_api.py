@@ -23,6 +23,7 @@ from backend_validation import (
 )
 from grammar_corrector import polish_summary
 from smart_formatter import format_smart_summary
+from resume_preprocessor import preprocess_resume
 
 # Fix SSL certificate issues
 try:
@@ -541,6 +542,9 @@ def summarize():
             return jsonify({'error': '; '.join(text_errors)}), 400
         
         text = sanitized_text
+        
+        # Preprocess resume if detected (clean contact info, structure sections)
+        text = preprocess_resume(text)
         
         # Get summary parameters from form (if file upload) or json (if text)
         if 'file' in request.files:
