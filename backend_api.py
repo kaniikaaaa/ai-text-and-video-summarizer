@@ -330,8 +330,12 @@ def textrank_summarize(text, max_sentences=None):
     # Clean the text
     text = clean_text(text)
     
+    # Ensure max_sentences is int or None (convert 'auto' or other strings to None)
+    if isinstance(max_sentences, str) or max_sentences == 0:
+        max_sentences = None
+    
     # Auto-calculate optimal summary length if not provided
-    if max_sentences is None or max_sentences == 0:
+    if max_sentences is None:
         max_sentences = calculate_optimal_summary_length(text)
         print(f"Auto-calculated summary length: {max_sentences} sentences")
     
@@ -423,8 +427,12 @@ def transformer_summarize(text, max_sentences=None):
         # Clean the text
         text = text.strip()
         
+        # Ensure max_sentences is int or None (convert 'auto' or other strings to None)
+        if isinstance(max_sentences, str) or max_sentences == 0:
+            max_sentences = None
+        
         # Auto-calculate optimal summary length if not provided
-        if max_sentences is None or max_sentences == 0:
+        if max_sentences is None:
             max_sentences = calculate_optimal_summary_length(text)
             print(f"Auto-calculated summary length (Transformer): {max_sentences} sentences")
         
@@ -555,7 +563,7 @@ def summarize():
             app.logger.error(f"Max sentences validation failed: {sentences_errors}")
             return jsonify({'error': '; '.join(sentences_errors)}), 400
         
-        # Generate summary
+        # Generate summary (max_sentences is either None or int from validation)
         if method == 'transformer' and USE_TRANSFORMER:
             summary = transformer_summarize(text, max_sentences)
             if not summary:

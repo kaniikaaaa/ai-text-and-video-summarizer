@@ -162,9 +162,13 @@ def validate_summarization_method(method):
 
 
 def validate_max_sentences(max_sentences):
-    """Validate max_sentences parameter"""
-    if max_sentences == 'auto':
-        return True, [], 'auto'
+    """Validate max_sentences parameter
+    Returns: (is_valid, errors, sanitized_value)
+    sanitized_value will be None (for auto), or an integer
+    """
+    # Handle None, empty string, or 'auto' - all mean automatic
+    if max_sentences is None or max_sentences == '' or max_sentences == 'auto':
+        return True, [], None  # Return None instead of 'auto' for consistency
     
     # Try to convert to integer
     try:
