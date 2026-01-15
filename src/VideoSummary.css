@@ -1,0 +1,96 @@
+/* Video Summary Container */
+.video-summary-container {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(120deg, #fbc2eb, #a6c1ee);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+}
+
+/* Video Summary Box */
+.video-summary-box {
+  width: 100%;
+  max-width: 700px;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.video-summary-title {
+  font-size: 1.8rem;
+  margin-bottom: 25px;
+  color: #333333;
+  font-weight: 700;
+}
+
+.input-url {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border: 2px solid #cccccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+.input-url:focus {
+  border: 2px solid #a6c1ee;
+  box-shadow: 0 0 8px rgba(166, 193, 238, 0.4);
+}
+
+.summarize-video-button {
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #a6c1ee, #5f86b5);
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.summarize-video-button:hover {
+  background: linear-gradient(135deg, #5f86b5, #3d5a80);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.summarize-video-button:active {
+  transform: translateY(0);
+}
+
+.video-summary-result {
+  margin-top: 30px;
+  padding: 25px;
+  background-color: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  text-align: left;
+}
+
+.video-summary-result h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #1f2937;
+  font-weight: 700;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #a6c1ee;
+}
+
+.video-summary-result p {
+  font-size: 1.05rem;
+  color: #374151;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-weight: 400;
+}
